@@ -1,28 +1,91 @@
 import React, { Component } from 'react';
+import api from '../services/api';
 
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, BackHandler } from "react-native"
 
 class Product extends Component {
-    navigationOptions = ({ navigation }) => ({
-        title: navigation.state.params.product.title
-    });
 
-    renderInput= (productName, productAmount) => (
+    state = {
+        productId: "",
+        productName: "",
+        productAmount: "",
+        productPrice: ""
+    }
+    
+    componentWillMount(){
+        const { navigation } = this.props;
+        
+        if (navigation.state.params) {
+            this.setState({
+                productId: navigation.state.params.product.id,
+                productName : navigation.state.params.product.name,
+                productAmount : navigation.state.params.product.amount,
+                productPrice : navigation.state.params.product.price
+            });
+        }
+    }
+
+    handleButtomAction = () => {
+        if (this.state.productId) {
+            this.updateProducts();
+        } else {
+            this.insertProducts();
+        }
+    }
+
+    insertProducts = async () => {
+        await api.post(
+            `/products/`, 
+            {
+                name: this.state.productName, 
+                amount: this.state.productAmount, 
+                price: this.state.productPrice
+            }
+        );
+    }
+
+    updateProducts = async () => {
+        await api.put(
+            `/products/${this.state.productId}`, 
+            {
+                name: this.state.productName, 
+                amount: this.state.productAmount, 
+                price: this.state.productPrice
+            }
+        );
+    }
+
+    renderInput= () => (
         <View style={styles.container}>
             <TextInput
                 style={styles.produtInput}
-                value={productName}
+                value={this.state.productName}
+                onChangeText = {(productName) => {this.setState({productName})}}
+                placeholder = "Nome do Produto"
+                placeholderTextColor = "#8B8989"
             />
 
             <TextInput
                 style={styles.produtInput}
-                value={productAmount}
+                value={String(this.state.productAmount)}
+                onChangeText = {(productAmount) => {this.setState({productAmount})}}
+                placeholder = "Quantidade"
+                placeholderTextColor = "#8B8989"
+            />
+
+            <TextInput
+                style={styles.produtInput}
+                value={String(this.state.productPrice)}
+                onChangeText = {(productPrice) => {this.setState({productPrice})}}
+                placeholder = "Preço"
+                placeholderTextColor = "#8B8989"
+                
             />
 
             <TouchableOpacity 
                 style={styles.productButton} 
                 onPress={() => {
-                    this.props.navigation.navigate("Product", { product: item })
+                    this.handleButtomAction()
                 }}
             >
                 <Text style={styles.productButtonText}>Salvar</Text>    
@@ -31,9 +94,8 @@ class Product extends Component {
     )
 
     render() {
-        const { navigation } = this.props;
         return (
-            this.renderInput(navigation.state.params.product.title, '2')
+            this.renderInput()
         );
     }
 }

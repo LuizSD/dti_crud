@@ -1,72 +1,51 @@
 import React, { Component } from 'react';
 import api from '../services/api';
 
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native"
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from "react-native";
+
+import ActionButton from 'react-native-action-button';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 export default class Main extends Component {
     static navigationOptions = {
-        title: "JShunt"
+        title: "DTI Estoque"
     };
 
     state = {
-        productInfo: {},
-        docs: [],
-        page: 1,
+        docs: []
     }
 
     componentDidMount() {
         this.loadProducts();
     }
 
-    loadProducts = async (page = 1) => {
-        const response = await api.get(`/products?page=${page}`);
+    loadProducts = async () => {
+        const response = await api.get('/products');
 
-        const { docs, ...productInfo } = response.data;
-
-        this.setState({ 
-            docs: [...this.state.docs, ...docs], 
-            productInfo,
-            page
-        });
-    }
-
-    loadMore = () => {
-        const { page, productInfo } = this.state;
-
-        if (page === productInfo.pages) return;
-
-        const pageNumber = page + 1;
-
-        this.loadProducts(pageNumber);
-    }
-
-    reloadPage = async () => {
-        const response = await api.get(`/products?page=${productInfo.page}`);
-
-        const { docs, ...productInfo } = response.data;
+        const docs = response.data;
 
         this.setState({ 
-            docs: docs, 
-            productInfo
+            docs: [...docs]
         });
-    } 
+    }
 
     deleteProducts = async (id) => {
         await api.delete(`/products/${id}`);
 
-        this.reloadPage();
+        this.loadProducts();
     }
 
     renderItem = ({ item }) => (
         <View style={styles.productContainer}>
-            <Text style={styles.productTitle}>{item.title}</Text>    
-            <Text style={styles.productDescription}>{item.description}</Text>
+            <Text style={styles.productTitle}>Produto: {item.name}</Text>    
+            <Text style={styles.productDescription}>Quantidade: {String(item.amount)}</Text>
+            <Text style={styles.productDescription}>Preço: {String(item.price)}</Text>
             
             <View style={styles.productButtonContainer}>
                 <TouchableOpacity 
                     style={styles.productButton} 
                     onPress={() => {
-                        this.props.navigation.navigate("Product", { product: item})
+                        this.props.navigation.navigate("Product", { product: item })
                     }}
                 >
                     <Text style={styles.productButtonText}>Editar</Text>    
@@ -75,7 +54,7 @@ export default class Main extends Component {
                 <TouchableOpacity 
                     style={styles.productButton} 
                     onPress={() => {
-                        this.deleteProducts(item._id)
+                        this.deleteProducts(item.id)
                     }}
                 >
                     <Text style={styles.productButtonText}>Excluir</Text>    
@@ -86,15 +65,28 @@ export default class Main extends Component {
 
     render() {
         return (
-            <View style={styles.container}>
-                <FlatList
-                    contentContainerStyle={styles.list}
-                    data={this.state.docs}
-                    keyExtractor={item => item._id}
-                    renderItem={this.renderItem}
-                    onEndReached={this.loadMore}
-                    onEndReachedThreshold={0.1}
-                />
+            
+            <View style={{flex:1, backgroundColor: '#f3f3f3'}}>
+                <View style={styles.container}>
+                    <FlatList
+                        contentContainerStyle={styles.list}
+                        data={this.state.docs}
+                        keyExtractor={item => item.id}
+                        renderItem={this.renderItem}
+                    />
+                </View>
+                <ActionButton buttonColor="rgba(231,76,60,1)">
+                    <ActionButton.Item 
+                        buttonColor='#9b59b6' 
+                        title="Novo Produto" 
+                        onPress={() => { this.props.navigation.navigate("Product")}}
+                    >
+                        <Icon name="md-create" style={styles.actionButtonIcon} />
+                    </ActionButton.Item>
+                    <ActionButton.Item buttonColor='#3498db' title="Notifications" onPress={() => {}}>
+                        <Icon name="md-notifications-off" style={styles.actionButtonIcon} />
+                    </ActionButton.Item>
+                </ActionButton>
             </View>
         );
     }
@@ -153,5 +145,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#DA552F",
         fontWeight: "bold"
-    }
+    },
+
+    actionButtonIcon: {
+        fontSize: 20,
+        height: 22,
+        color: 'white',
+    },
 })

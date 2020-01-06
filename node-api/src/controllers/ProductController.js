@@ -29,8 +29,11 @@ module.exports = {
         if (!product) {
             return res.status(400).json({error: "Product not exists"});
         }
+        
+        console.log(req.body);
 
         product = await product.update(req.body);
+
 
         return res.json(product);
     },
