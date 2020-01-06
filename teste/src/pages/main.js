@@ -83,8 +83,12 @@ export default class Main extends Component {
                     >
                         <Icon name="md-create" style={styles.actionButtonIcon} />
                     </ActionButton.Item>
-                    <ActionButton.Item buttonColor='#3498db' title="Notifications" onPress={() => {}}>
-                        <Icon name="md-notifications-off" style={styles.actionButtonIcon} />
+                    <ActionButton.Item 
+                        buttonColor='#3498db' 
+                        title="Refresh" 
+                        onPress={() => { this.loadProducts() }}
+                    >
+                        <Icon name="md-refresh" style={styles.actionButtonIcon} />
                     </ActionButton.Item>
                 </ActionButton>
             </View>
